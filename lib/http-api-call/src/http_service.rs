@@ -1,6 +1,6 @@
 use crate::api_store;
 use crate::api_store::Api;
-use crate::res::Res;
+use crate::res::{PageRes, Res};
 use rocket::http::Status;
 use rocket::response::Responder;
 use rocket::serde::json::Json;
@@ -27,16 +27,17 @@ struct ListApiReq {
     pub filter: Option<String>,
 }
 
-/// 添加API
-#[post("/add", data = "<req>")]
-pub async fn add_api(req: Json<Api>) -> Res<()> {
+/// 添加A或修改PI
+#[post("/addOrUpdate", data = "<req>")]
+pub async fn add_or_update_api(req: Json<Api>) -> Res<()> {
     match api_store::add_api(req.into_inner()) {
         Ok(_) => Res::success(()),
         Err(e) => Res::error(&e.to_string()),
     }
 }
 
-#[post("/remove", data = "<req>")]
+/// 删除API
+#[post("/delete", data = "<req>")]
 pub async fn remove_api(req: Json<RemoveApiReq>) -> Res<()> {
     match api_store::remove_api(&req.name) {
         Ok(_) => Res::success(()),
@@ -44,24 +45,21 @@ pub async fn remove_api(req: Json<RemoveApiReq>) -> Res<()> {
     }
 }
 
-/// 修改API
-#[post("/update", data = "<req>")]
-pub async fn update_api(req: Json<Api>) -> Res<()> {
-    match api_store::add_api(req.into_inner()) {
-        Ok(_) => Res::success(()),
-        Err(e) => Res::error(&e.to_string()),
-    }
-}
-
+/// 查询API列表
 #[post("/list", data = "<req>")]
-pub async fn list_api(req: Json<ListApiReq>) -> Res<Vec<Api>> {
+pub async fn list_api(req: Json<ListApiReq>) -> Res<PageRes<Api>> {
     let req = req.into_inner();
     match api_store::filter_api_page(
         &req.filter.unwrap_or_default(),
         req.page.page_num as usize,
         req.page.page_size as usize,
     ) {
-        Ok(apis) => Res::success(apis),
+        Ok(list) => Res::success(PageRes {
+            page_num: req.page.page_num,
+            page_size: req.page.page_size,
+            total: api_store::count() as u64,
+            list,
+        }),
         Err(e) => Res::error(&e.to_string()),
     }
 }

@@ -1,4 +1,4 @@
-use crate::http_service::{add_api, list_api, remove_api, update_api};
+use crate::http_service::{add_or_update_api, list_api, remove_api};
 use rocket::data::{ByteUnit, Limits};
 use rocket::fs::{FileServer, NamedFile};
 use rocket::{Config, get, routes};
@@ -27,7 +27,7 @@ pub fn start() -> anyhow::Result<JoinHandle<Result<(), anyhow::Error>>> {
             ..Config::debug_default()
         });
 
-        builder = builder.mount("/api", routes![add_api, remove_api, update_api, list_api]);
+        builder = builder.mount("/api", routes![add_or_update_api, remove_api, list_api]);
 
         if cfg!(not(debug_assertions)) {
             // 前端服务，映射到文件夹，rank设置为100，优先级低于接口映射
