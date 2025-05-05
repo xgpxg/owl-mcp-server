@@ -1,0 +1,12 @@
+[package]
+name = "owl-mcp-server"
+version = "0.1.0"
+edition = "2024"
+
+[workspace]
+members = ["lib/http-api-call"]
+
+
+[dependencies]
+
+

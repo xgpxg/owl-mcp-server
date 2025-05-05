@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "api-call": {
+      "command": "sh",
+      "args": [
+        "-c",
+        "api-call"
+      ]
+    }
+  }
+}
