@@ -1,3 +1,6 @@
+use std::process::exit;
+use tokio::signal::unix::{SignalKind, signal};
+
 mod api_store;
 mod http_server;
 mod http_service;
@@ -17,8 +20,6 @@ async fn main() -> anyhow::Result<()> {
 
     // 启动mcp server
     mcp_server::start().await?;
-    // 启动http server
-    http_server::start().await?;
 
     Ok(())
 }

@@ -1,10 +1,10 @@
 {
   "mcpServers": {
-    "api-call": {
+    "http-api-call": {
       "command": "sh",
       "args": [
         "-c",
-        "api-call"
+        "http-api-call"
       ]
     }
   }

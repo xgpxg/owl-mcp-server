@@ -1,9 +1,13 @@
-use rmcp::model::{ListToolsResult, PaginatedRequestParam, Tool};
-use rmcp::{RoleServer, ServerHandler, tool};
+use rmcp::model::{
+    CancelledNotificationParam, InitializeRequestParam, InitializeResult, ListToolsResult,
+    PaginatedRequestParam, Tool,
+};
+use rmcp::{Error, RoleServer, ServerHandler, tool};
 use std::sync::Arc;
 
-use crate::api_store;
+use crate::{api_store, http_server};
 use rmcp::service::RequestContext;
+use tokio::task::JoinHandle;
 
 #[derive(Debug, Clone)]
 pub struct McpService;
@@ -16,19 +20,11 @@ impl McpService {
 }
 
 impl ServerHandler for McpService {
-    /*    fn call_tool(
-        &self,
-        request: CallToolRequestParam,
-        context: RequestContext<RoleServer>,
-    ) -> impl Future<Output = Result<CallToolResult, Error>> + Send + '_ {
-        todo!()
-    }*/
-
     fn list_tools(
         &self,
-        request: PaginatedRequestParam,
-        context: RequestContext<RoleServer>,
-    ) -> impl Future<Output = Result<ListToolsResult, rmcp::Error>> + Send + '_ {
+        _request: PaginatedRequestParam,
+        _context: RequestContext<RoleServer>,
+    ) -> impl Future<Output = Result<ListToolsResult, Error>> + Send + '_ {
         let tools = api_store::get_all_api()
             .iter()
             .map(|api| Tool {

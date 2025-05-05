@@ -1,21 +1,25 @@
+use crate::http_server;
 use crate::mcp_service::McpService;
-use rmcp::ServiceExt;
 use rmcp::transport::{SseServer, stdio};
+use rmcp::{ServerHandler, ServiceExt};
 use serde::de::Error;
+use tokio::signal::unix::{SignalKind, signal};
 
 pub async fn start() -> anyhow::Result<()> {
-    tokio::spawn(async move {
-        let transport = stdio();
-        let service = McpService::new();
-        let server = service.serve(transport).await?;
+    let transport = stdio();
+    let service = McpService::new();
+    let server = service.serve(transport).await?;
 
-        log::info!("api-call mcp server started");
+    log::info!("http-api-call mcp server started");
 
+    // 启动http服务
+    let handler = http_server::start()?;
 
-        tokio::signal::ctrl_c().await?;
+    server.waiting().await?;
 
-        server.cancel().await?;
-        Ok::<(),anyhow::Error>(())
-    });
+    handler.abort();
+
+    log::info!("http-api-call mcp server stopped");
+
     Ok(())
 }
