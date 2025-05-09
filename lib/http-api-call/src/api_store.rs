@@ -1,7 +1,10 @@
 use dashmap::DashMap;
-use rocket::serde::{Deserialize, Serialize};
-use std::fs;
-use std::sync::OnceLock;
+use rmcp::schemars::schema::Schema;
+use rmcp::schemars::{JsonSchema, SchemaGenerator};
+use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
+use std::sync::{LazyLock, OnceLock};
+use std::{env, fs};
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -17,7 +20,7 @@ pub struct Api {
     /// 请求方法
     pub method: String,
     /// 请求参数
-    pub request_params: Option<serde_json::Value>,
+    pub request_param: Option<serde_json::Value>,
     /// 请求参数对应的json schema（作为工具的input_schema）
     pub schema: Option<serde_json::Map<String, serde_json::Value>>,
     /// 创建时间
@@ -28,43 +31,55 @@ pub struct Api {
     pub status: Option<i8>,
 }
 
-const API_FILE: &str = "data/api.json";
+impl JsonSchema for Api {
+    fn schema_name() -> String {
+        "Api".to_string()
+    }
+
+    fn json_schema(_generator: &mut SchemaGenerator) -> Schema {
+        Schema::Bool(true)
+    }
+}
+
+const API_FILE: LazyLock<PathBuf> = LazyLock::new(|| {
+    env::current_exe()
+        .unwrap()
+        .parent()
+        .unwrap()
+        .join("api.json")
+});
 
 static API_STORE: OnceLock<DashMap<String, Api>> = OnceLock::new();
 
 pub(crate) fn init() -> anyhow::Result<()> {
-    let path = std::path::Path::new(API_FILE);
-    if !path.exists() {
-        //SAFE
-        fs::create_dir_all(path.parent().unwrap())?;
-        fs::write(API_FILE, "[]")?;
-        println!("api file created");
+    if !API_FILE.exists() {
+        fs::write(API_FILE.as_path(), "[]")?;
+        log::info!("api store file not exists, creat it");
     }
-    let api_file = fs::read_to_string(API_FILE)?;
-    log::info!("api file:{}", api_file);
+    let api_file = fs::read_to_string(API_FILE.as_path())?;
     let api_list: Vec<Api> = serde_json::from_str(&api_file)?;
-    log::info!("api list:{:?}", api_list);
     let map = api_list
         .into_iter()
         .map(|x| (x.name.clone(), x))
         .collect::<DashMap<String, Api>>();
     API_STORE.get_or_init(|| map);
+    log::info!("api store init success");
     Ok(())
 }
 
 /// 保存到磁盘
 fn save_to_disk() -> anyhow::Result<()> {
-    let mut map = API_STORE.get().unwrap();
+    let  map = API_STORE.get().unwrap();
     let api_list = map.iter().map(|x| x.clone()).collect::<Vec<_>>();
     let api_file = serde_json::to_string_pretty(&api_list)?;
-    fs::write(API_FILE, api_file)?;
+    fs::write(API_FILE.as_path(), api_file)?;
     Ok(())
 }
 
 /// 添加API
 pub fn add_api(api: Api) -> anyhow::Result<()> {
     {
-        let mut map = API_STORE.get().unwrap();
+        let  map = API_STORE.get().unwrap();
         map.insert(api.name.clone(), api);
     }
     save_to_disk()?;
@@ -72,6 +87,7 @@ pub fn add_api(api: Api) -> anyhow::Result<()> {
 }
 
 /// 获取API
+#[allow(unused)]
 pub fn get_api(name: &str) -> Option<Api> {
     API_STORE.get().unwrap().get(name).map(|x| x.clone())
 }
@@ -85,7 +101,7 @@ pub fn get_all_api() -> Vec<Api> {
 /// 删除API
 pub fn remove_api(name: &str) -> anyhow::Result<()> {
     {
-        let mut map = API_STORE.get().unwrap();
+        let map = API_STORE.get().unwrap();
         map.remove(name);
     }
     save_to_disk()?;

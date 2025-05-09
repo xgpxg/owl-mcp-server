@@ -1,6 +1,6 @@
-pub type AppResult<T> = Result<T, AppError>;
 
 #[derive(Debug, thiserror::Error)]
+#[allow(unused)]
 pub enum AppError {
     /// 初始化错误
     #[error("init error: {0}")]

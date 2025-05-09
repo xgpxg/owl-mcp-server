@@ -4,7 +4,7 @@
       "command": "sh",
       "args": [
         "-c",
-        "http-api-call"
+        "data/mcp/http-api-call"
       ]
     }
   }

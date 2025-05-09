@@ -13,8 +13,6 @@ pub(crate) fn init_log() {
 
 fn init_log_for_release() {
     env_logger::Builder::new()
-        .filter_module("rocket", log::LevelFilter::Warn)
-        .filter_module("rocket::response::debug", log::LevelFilter::Error)
         .filter_level(log::LevelFilter::Info)
         .format(|buf, record| {
             let level = match record.level() {
@@ -37,8 +35,6 @@ fn init_log_for_release() {
 }
 fn init_log_for_debug() {
     env_logger::Builder::new()
-        .filter_module("rocket::server", log::LevelFilter::Warn)
-        .filter_module("rbatis", log::LevelFilter::Debug)
         .filter_level(log::LevelFilter::Info)
         .format(|buf, record| {
             let module_path = record.module_path().unwrap_or("<unknown>");
