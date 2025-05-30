@@ -1,6 +1,7 @@
 use crate::api_store;
 use crate::api_store::Api;
 use crate::res::{PageRes, Res};
+use reqwest::header::{HeaderMap, HeaderName, HeaderValue};
 use reqwest::{Client, Method};
 use rmcp::model::{
     CallToolRequestParam, CallToolResult, Content, ErrorData, ListToolsResult,
@@ -11,6 +12,8 @@ use rmcp::schemars::{JsonSchema, SchemaGenerator};
 use rmcp::service::RequestContext;
 use rmcp::{Error, RoleServer, ServerHandler};
 use serde::{Deserialize, Serialize};
+use serde_json::{Map, Value};
+use std::collections::HashMap;
 use std::str::FromStr;
 use std::sync::{Arc, LazyLock};
 use std::time::Duration;
@@ -86,15 +89,30 @@ impl ServerHandler for McpService {
                     serde_json::to_value(Res::success(()))
                 } else {
                     let api = api.unwrap();
-                    let url = api.url;
+                    let url = &api.url;
+                    // 提取参数
+                    let (query, body, header) = extract_parameters(&api, &request);
                     // 注意大小写，只支持大写
                     let method = Method::from_str(&api.method.to_uppercase()).unwrap();
-                    log::info!("call api, method: {} ,url:  {}", method, url);
+                    log::info!(
+                        "call api, method: {} ,url:  {}, header:{:?}, query: {:?}, body: {:?}",
+                        method,
+                        url,
+                        header,
+                        query,
+                        body
+                    );
                     // 请求接口
                     let res = HTTP_CLIENT
                         .request(method, url)
-                        .query(&request.arguments)
-                        .json(&request.arguments)
+                        .query(&query)
+                        .json(&body)
+                        .headers(HeaderMap::from_iter(header.iter().map(|(k, v)| {
+                            let name = HeaderName::from_str(k).expect("Invalid header name");
+                            let value = HeaderValue::from_str(v.as_str().unwrap())
+                                .expect("Invalid header value");
+                            (name, value)
+                        })))
                         .send()
                         .await;
                     log::info!("call api res: {:?}", res);
@@ -185,3 +203,46 @@ static HTTP_CLIENT: LazyLock<Client> = LazyLock::new(|| {
         .build()
         .unwrap()
 });
+
+/// 从MCP请求参数中提取参数
+fn extract_parameters(
+    api: &Api,
+    call_request: &CallToolRequestParam,
+) -> (
+    HashMap<String, Value>,
+    HashMap<String, Value>,
+    HashMap<String, Value>,
+) {
+    let mut query_params = HashMap::new();
+    let mut body_params = HashMap::new();
+    let mut header_params = HashMap::new();
+
+    if let Some(params) = api.request_param.clone() {
+        let params = params.as_array().unwrap_or(&vec![]).clone();
+        for param in params {
+            let name = param["name"].as_str().unwrap_or_default();
+            let position = param["position"].as_str().unwrap_or_default();
+
+            if let Some(value) = call_request
+                .arguments
+                .as_ref()
+                .and_then(|args| args.get(name))
+            {
+                match position {
+                    "url" => {
+                        query_params.insert(name.to_string(), value.clone());
+                    }
+                    "body" => {
+                        body_params.insert(name.to_string(), value.clone());
+                    }
+                    "header" => {
+                        header_params.insert(name.to_string(), value.clone());
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
+
+    (query_params, body_params, header_params)
+}
