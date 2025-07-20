@@ -1,28 +1,32 @@
-get_os() {
-  case "$(uname -s)" in
-    Linux*)
-      echo "linux"
-      ;;
-    Darwin*)
-      echo "macos"
-      ;;
-    CYGWIN* | MINGW32* | MINGW64*)
-      echo "windows"
-      ;;
-    *)
-      echo "unknown"
-      ;;
-  esac
-}
+#get_os() {
+#  case "$(uname -s)" in
+#    Linux*)
+#      echo "linux"
+#      ;;
+#    Darwin*)
+#      echo "macos"
+#      ;;
+#    CYGWIN* | MINGW32* | MINGW64*)
+#      echo "windows"
+#      ;;
+#    *)
+#      echo "unknown"
+#      ;;
+#  esac
+#}
 
-OS=$(get_os)
-WORK_DIR="/home/wxg/work/project/owl-mcp-server"
+OS=$2
 APP_NAME="$1"
-PACKAGE_DIR="${WORK_DIR}/package/${APP_NAME}"
-LOCAL_REPO="/home/wxg/work/project/public-resource/mcp-servers/${APP_NAME}"/"${OS}"
-mkdir -p "${LOCAL_REPO}"
+# 远程存放包的目录
+REMOTE="wxg@192.168.1.242"
+PACKAGE="/home/wxg/work/project/owl-mcp-server/package/${APP_NAME}/${OS}/${APP_NAME}.tar.gz"
+REMOTE_RELEASE_DIR="/home/pub/packages/releases/fs-kb-app/mcp-servers/${APP_NAME}/${OS}"
+PACKAGE_NAME="$1"
 
-cp "${PACKAGE_DIR}"/"${APP_NAME}".tar.gz "${LOCAL_REPO}"/"${APP_NAME}".tar.gz
-cd "${LOCAL_REPO}" || exit
-git pull --rebase origin master
-git add . && git commit -m "update ${APP_NAME}" &&  git push
+
+echo "开始发布 ${PACKAGE_NAME}"
+
+ssh ${REMOTE} "mkdir -p ${REMOTE_RELEASE_DIR}"
+# 复制到发布目录
+scp  "${PACKAGE}" "${REMOTE}:${REMOTE_RELEASE_DIR}/${APP_NAME}.tar.gz"
+echo "发布完成"

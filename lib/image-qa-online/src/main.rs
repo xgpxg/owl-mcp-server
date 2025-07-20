@@ -45,6 +45,7 @@ impl ImageQA {
             image_paths,
         }): Parameters<Req>,
     ) -> Result<CallToolResult, ErrorData> {
+        log::info!("[image-qa-online]prompt: {}, image_paths: {:?}", prompt, image_paths);
         match image_to_text::extra(prompt, image_paths).await {
             Ok(res) => Ok(CallToolResult::success(vec![Content::text(
                 res.unwrap_or_default(),
