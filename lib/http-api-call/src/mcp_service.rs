@@ -17,6 +17,7 @@ use std::collections::HashMap;
 use std::str::FromStr;
 use std::sync::{Arc, LazyLock};
 use std::time::Duration;
+use common::log;
 
 #[derive(Debug, Clone)]
 pub struct McpService;

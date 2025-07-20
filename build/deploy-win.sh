@@ -1,6 +1,6 @@
 #!/bin/bash
 
-TARGET=x86_64-pc-windows-gnu
+TARGET="x86_64-pc-windows-gnu"
 # 应用名
 APP_NAME="$2"
 ## 工作目录

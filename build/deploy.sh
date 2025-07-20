@@ -9,7 +9,7 @@ FRONTEND_WORK_DIR="/home/wxg/work/project/one-api-client/mcp/${APP_NAME}"
 # 可执行文件路径
 BIN_PATH="${WORK_DIR}/target/release/${APP_NAME}"
 # 打包目录
-PACKAGE_DIR="${WORK_DIR}/package/${APP_NAME}"
+PACKAGE_DIR="${WORK_DIR}/package/${APP_NAME}/linux/"
 
 
 package(){

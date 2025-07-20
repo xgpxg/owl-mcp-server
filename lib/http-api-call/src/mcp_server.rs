@@ -1,6 +1,7 @@
 use crate::mcp_service::McpService;
 use rmcp::ServiceExt;
 use rmcp::transport::stdio;
+use common::log;
 
 pub async fn start() -> anyhow::Result<()> {
     let transport = stdio();

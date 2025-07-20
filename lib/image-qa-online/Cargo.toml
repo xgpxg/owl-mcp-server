@@ -4,14 +4,15 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-openai_dive = "1.2.3"
+common = { path = "../../lib/common" }
 anyhow = { workspace = true }
-log = { workspace = true }
-env_logger = { workspace = true }
 reqwest = { workspace = true }
 tokio = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 rmcp = { workspace = true }
-[dev-dependencies]
+openai_dive = { version = "1.0.1", features = ["stream"], git = "ssh://git@github.com/xgpxg/openai-client.git" }
 base64 = "0.22.1"
+log = "0.4.27"
+
+
