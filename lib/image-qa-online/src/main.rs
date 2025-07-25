@@ -2,7 +2,7 @@ use rmcp::handler::server::tool::{Parameters, ToolRouter};
 use rmcp::model::{CallToolResult, Content};
 use rmcp::transport::stdio;
 use rmcp::{
-    ErrorData, ServerHandler, ServiceError, ServiceExt, schemars, tool, tool_handler, tool_router,
+    ErrorData, ServerHandler, ServiceExt, schemars, tool, tool_handler, tool_router,
 };
 
 mod image_to_text;

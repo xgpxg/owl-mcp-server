@@ -1,16 +1,11 @@
-use anyhow::bail;
 use base64::Engine;
-use base64::alphabet::STANDARD;
 use base64::prelude::BASE64_STANDARD;
 use common::log;
 use openai_dive::v1::api::Client;
-use openai_dive::v1::error::APIError;
 use openai_dive::v1::resources::chat::{
-    ChatCompletionParametersBuilder, ChatCompletionResponse, ChatCompletionResponseFormat,
-    ChatMessage, ChatMessageContent, ChatMessageContentPart, ChatMessageImageContentPart,
-    ChatMessageTextContentPart, ImageUrlType,
+    ChatCompletionParametersBuilder, ChatCompletionResponseFormat, ChatMessage, ChatMessageContent,
+    ChatMessageContentPart, ChatMessageImageContentPart, ChatMessageTextContentPart, ImageUrlType,
 };
-use reqwest::Url;
 use std::io::Read;
 use std::time::Duration;
 use std::{env, fs};
@@ -81,11 +76,13 @@ async fn build_messages(prompt: &str, image_urls: Vec<String>) -> anyhow::Result
 }
 
 async fn image_url_to_base64(image_url: &str) -> anyhow::Result<String> {
-    let data = if let Ok(_) = Url::parse(image_url) {
+    let data = if image_url.starts_with("http://") || image_url.starts_with("https://") {
+        // 处理网络 URL
         let client = reqwest::Client::new();
         let response = client.get(image_url).send().await?.bytes().await?;
         response.to_vec()
     } else {
+        // 处理本地文件路径
         let mut file = fs::File::open(image_url)?;
         let mut buffer = Vec::new();
         file.read_to_end(&mut buffer)?;
