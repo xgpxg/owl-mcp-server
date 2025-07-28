@@ -42,7 +42,7 @@ impl ImageQA {
             tool_router: Self::tool_router(),
         }
     }
-    #[tool(description = "可以对图片进行提问，分析图片，提取图片中的文本，生成图片摘要")]
+    #[tool(description = "图像智能问答工具：可分析图片内容并回答相关问题，提取图片中的文字（OCR），生成图片摘要描述。输入支持本地图片路径和网络图片链接。")]
     async fn chat_to_image(
         &self,
         Parameters(Req {
