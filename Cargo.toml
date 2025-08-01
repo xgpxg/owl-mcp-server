@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [workspace]
-members = ["lib/common", "lib/http-api-call", "lib/image-qa-online"]
+members = ["lib/common", "lib/http-api-call", "lib/image-qa-online", "lib/web-search"]
 
 
 [dependencies]

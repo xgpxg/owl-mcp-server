@@ -10,14 +10,14 @@ APP_DIR="${WORK_DIR}/lib/${APP_NAME}"
 # 前端工作目录
 FRONTEND_WORK_DIR="/home/wxg/work/project/one-api-client/mcp/${APP_NAME}"
 # 可执行文件路径
-BIN_PATH="${WORK_DIR}/target/release/${APP_NAME}"
+BIN_PATH="${WORK_DIR}/target/${TARGET}/release/${APP_NAME}"
 # 打包目录
 PACKAGE_DIR="${WORK_DIR}/package/${APP_NAME}/linux/"
 
 
 package(){
   echo "开始打包${APP_NAME}"
-  cargo build -r -p ${APP_NAME}
+  cargo build -r --target ${TARGET} -p ${APP_NAME}
   if [ $? -ne 0 ]; then
     echo "编译失败"
     exit 1

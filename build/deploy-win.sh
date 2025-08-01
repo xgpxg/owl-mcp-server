@@ -5,6 +5,8 @@ TARGET="x86_64-pc-windows-gnu"
 APP_NAME="$2"
 ## 工作目录
 WORK_DIR="/home/wxg/work/project/owl-mcp-server"
+# APP目录
+APP_DIR="${WORK_DIR}/lib/${APP_NAME}"
 # 前端工作目录
 FRONTEND_WORK_DIR="/home/wxg/work/project/one-api-client/mcp/${APP_NAME}"
 # 可执行文件路径
@@ -47,6 +49,14 @@ package(){
     mkdir -p ${PACKAGE_DIR}/resources
     # 复制前端文件
     rsync -av ${FRONTEND_WORK_DIR}/dist/ ${PACKAGE_DIR}/resources/web
+  fi
+
+  if [ "$APP_NAME" = "web-search" ]; then
+    resources="resources"
+    # 资源目录
+    mkdir -p ${PACKAGE_DIR}/resources/chrome
+    # 复制resources
+    rsync -av ${APP_DIR}/resources/windows/chrome ${PACKAGE_DIR}/resources
   fi
 
   # 生成压缩包
