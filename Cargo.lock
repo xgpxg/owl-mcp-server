@@ -3493,7 +3493,6 @@ dependencies = [
  "anyhow",
  "clap",
  "common",
- "futures-util",
  "headless_chrome",
  "log",
  "openai_dive",
