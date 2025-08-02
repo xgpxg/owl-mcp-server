@@ -1,6 +1,4 @@
-use rmcp::handler::server::router::tool::CallToolHandlerExt;
 use scraper::{ElementRef, Html, Selector};
-use std::collections::HashMap;
 
 pub(crate) fn clean_text(text: &str) -> String {
     let mut cleaned = text.to_string();
@@ -381,7 +379,7 @@ impl HtmlToMdConverter {
                 }
                 for child in element.children() {
                     match child.value() {
-                        scraper::Node::Element(child_element) => {
+                        scraper::Node::Element(_) => {
                             if let Some(child_ref) = scraper::ElementRef::wrap(child) {
                                 Self::process_element_recursive(child_ref, markdown, depth);
                             }
@@ -683,7 +681,10 @@ impl ImprovedContentExtractor {
         let mut current = element;
         while let Some(parent) = current.parent() {
             if let Some(parent_element) = ElementRef::wrap(parent) {
-                if std::ptr::eq(parent_element.value() as *const _, container.value() as *const _) {
+                if std::ptr::eq(
+                    parent_element.value() as *const _,
+                    container.value() as *const _,
+                ) {
                     return true;
                 }
                 current = parent_element;
@@ -724,7 +725,10 @@ impl ImprovedContentExtractor {
                     // 查找当前元素在父元素子元素中的位置
                     for (i, child) in parent_element.children().enumerate() {
                         if let Some(child_element) = ElementRef::wrap(child) {
-                            if std::ptr::eq(child_element.value() as *const _, current.value() as *const _) {
+                            if std::ptr::eq(
+                                child_element.value() as *const _,
+                                current.value() as *const _,
+                            ) {
                                 index = i;
                                 found = true;
                                 break;
@@ -812,28 +816,6 @@ impl ImprovedContentExtractor {
         html
     }
 
-    /// 收集所有可能包含内容的元素
-    fn collect_content_elements(root: ElementRef) -> Vec<ElementRef<'_>> {
-        let mut elements = Vec::new();
-        Self::collect_elements_recursive(root, &mut elements);
-        elements
-    }
-
-    /// 递归收集元素
-    fn collect_elements_recursive<'a>(element: ElementRef<'a>, elements: &mut Vec<ElementRef<'a>>) {
-        // 只收集有ID或可能包含内容的元素
-        if element.value().id().is_some() || Self::is_content_container(element.value().name()) {
-            elements.push(element);
-        }
-
-        // 递归处理子元素
-        for child in element.children() {
-            if let Some(child_element) = ElementRef::wrap(child) {
-                Self::collect_elements_recursive(child_element, elements);
-            }
-        }
-    }
-
     /// 判断元素是否可能是内容容器
     fn is_content_container(tag_name: &str) -> bool {
         matches!(
@@ -901,7 +883,7 @@ impl ImprovedContentExtractor {
         // 链接密度惩罚
         let link_density = Self::calculate_link_density(element);
         if link_density > 0.3 {
-            score *= (1.0 - link_density);
+            score *= 1.0 - link_density;
         }
 
         // 段落数量奖励
@@ -966,38 +948,6 @@ impl ImprovedContentExtractor {
         }
     }
 
-    /// 从元素中提取清理后的文本
-    fn extract_clean_text(element: ElementRef) -> String {
-        let mut text = String::new();
-        Self::extract_text_recursive(element, &mut text);
-        text
-    }
-
-    /// 递归提取文本
-    fn extract_text_recursive(element: ElementRef, text: &mut String) {
-        let tag_name = element.value().name();
-
-        // 跳过不太可能是正文的标签
-        if matches!(tag_name, "script" | "style" | "nav" | "footer" | "header") {
-            return;
-        }
-
-        // 处理子节点
-        for child in element.children() {
-            match child.value() {
-                scraper::Node::Text(text_node) => {
-                    text.push_str(&text_node.text);
-                }
-                scraper::Node::Element(_) => {
-                    if let Some(child_element) = ElementRef::wrap(child) {
-                        Self::extract_text_recursive(child_element, text);
-                    }
-                }
-                _ => {}
-            }
-        }
-    }
-
     /// 启发式元素提取
     fn extract_element_heuristic(document: &Html) -> Option<String> {
         let content_selectors = [
@@ -1054,32 +1004,6 @@ impl ImprovedContentExtractor {
                 }
             }
             None
-        }
-    }
-    /// 查找文本最密集的区域
-    fn find_text_densest_area(document: &Html) -> String {
-        let mut candidates = Vec::new();
-
-        if let Ok(div_selector) = Selector::parse("div") {
-            for element in document.select(&div_selector) {
-                let text_content = element.text().collect::<String>();
-                let text_length = text_content.chars().filter(|c| !c.is_whitespace()).count();
-
-                if text_length > 100 {
-                    candidates.push((element, text_length));
-                }
-            }
-        }
-
-        // 按文本长度排序
-        candidates.sort_by(|a, b| b.1.cmp(&a.1));
-
-        // 返回文本最长的元素内容
-        if let Some((element, _)) = candidates.first() {
-            Self::extract_clean_text(*element)
-        } else {
-            // 最后手段：提取所有文本
-            document.root_element().text().collect::<String>()
         }
     }
 }

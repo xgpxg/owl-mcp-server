@@ -1,4 +1,3 @@
-use crate::html_helper::HtmlToMdConverter;
 use crate::{ExtractType, FetchType, extract_text, html_helper};
 use anyhow::anyhow;
 use headless_chrome::protocol::cdp::Target::CreateTarget;
@@ -206,6 +205,9 @@ impl WebSearch {
             FetchType::Static => Self::get_raw_content_with_static(url).await?,
             FetchType::Dynamic => {
                 let browser = BROWSER.get_or_init(|| {
+                    let current_dir = env::current_exe().unwrap();
+                    let current_dir = current_dir.parent().unwrap();
+                    let path = current_dir.join("resources").join("chrome");
                     let browser = Browser::new(LaunchOptions {
                         headless: env::var("CHROME_HEADLESS")
                             .unwrap_or("true".to_string())
@@ -215,9 +217,9 @@ impl WebSearch {
                         window_size: Some((1080, 720)),
                         idle_browser_timeout: Duration::from_secs(60 * 60 * 24),
                         #[cfg(windows)]
-                        path: Some("resources/chrome/chrome.exe".into()),
+                        path: path.join("chrome").into(),
                         #[cfg(unix)]
-                        path: Some("resources/chrome/chrome".into()),
+                        path: path.join("chrome.exe").into(),
                         args: vec![
                             "--blink-settings=imagesEnabled=false".as_ref(),
                             "--disable-images".as_ref(),

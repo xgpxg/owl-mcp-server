@@ -29,7 +29,9 @@ impl WebSearchMcpServer {
             tool_router: Self::tool_router(),
         }
     }
-    #[tool(description = "网页搜索工具：指定关键词搜索网页，返回网页标题、摘要和链接")]
+    #[tool(
+        description = "网页搜索功能：输入关键词和结果数量，搜索互联网获取相关网页信息。返回结果包括每个网页的标题、内容摘要和原始URL链接，帮助用户快速了解搜索主题的相关信息"
+    )]
     async fn search(
         &self,
         Parameters(SearchReq { keyword, count }): Parameters<SearchReq>,
@@ -47,7 +49,9 @@ impl WebSearchMcpServer {
         }
     }
 
-    #[tool(description = "从给定的网页链接中提取出网页正文内容，返回markdown格式")]
+    #[tool(
+        description = "网页内容提取工具：从指定URL链接中提取网页正文内容，并将其转换为结构化的Markdown格式，便于阅读和后续处理"
+    )]
     async fn extract(
         &self,
         Parameters(ExtractReq { url }): Parameters<ExtractReq>,
