@@ -79,10 +79,13 @@ pub(crate) async fn extract(
             code: 0,
             msg: None,
         },
-        Err(e) => Res {
-            data: None,
-            code: 1,
-            msg: Some(e.to_string()),
-        },
+        Err(e) => {
+            log::error!("Extract Failed: {}", e);
+            Res {
+                data: None,
+                code: 50000,
+                msg: Some("Extract Failed".to_string()),
+            }
+        }
     }
 }

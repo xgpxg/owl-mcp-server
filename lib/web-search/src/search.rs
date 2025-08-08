@@ -216,9 +216,9 @@ impl WebSearch {
                         sandbox: false,
                         window_size: Some((1080, 720)),
                         idle_browser_timeout: Duration::from_secs(60 * 60 * 24),
-                        #[cfg(windows)]
-                        path: path.join("chrome").into(),
                         #[cfg(unix)]
+                        path: path.join("chrome").into(),
+                        #[cfg(windows)]
                         path: path.join("chrome.exe").into(),
                         args: vec![
                             "--blink-settings=imagesEnabled=false".as_ref(),
