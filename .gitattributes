@@ -1,0 +1,1 @@
+lib/web-search/resources/**/* filter=lfs diff=lfs merge=lfs -text
