@@ -318,9 +318,12 @@ async fn test_search() {
 #[tokio::test]
 async fn test_extract() {
     common::init_log();
-    let content =
-        WebSearch::extract("https://news.sina.com.cn/c/2025-07-27/doc-infhxkpq5795183.shtml")
-            .await
-            .unwrap();
+    let content = WebSearch::extract(
+        "https://news.sina.com.cn/c/2025-07-27/doc-infhxkpq5795183.shtml",
+        FetchType::Static,
+        ExtractType::Algorithm,
+    )
+    .await
+    .unwrap();
     println!("[web-search]content: {:#?}", content);
 }
